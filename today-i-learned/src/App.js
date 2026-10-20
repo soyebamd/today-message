@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "./style.css";
 
 const categories = [
@@ -46,26 +47,12 @@ const initialFacts = [
 ];
 
 function App() {
+  const [formStatus, setFormStatus] = useState(false);
+
   return (
     <>
-      <header className="header">
-        <div className="logo">
-          <img
-            src="./logo.png"
-            height="68"
-            width="68"
-            alt="Today I Learned Logo"
-          />
-          <h1>Today I Learned</h1>
-        </div>
-
-        <button className="btn btn-large btn-open" id="">
-          Share a fact
-        </button>
-      </header>
-
-      <FormFact />
-
+      <Header formStatus={formStatus} setFormStatus={setFormStatus} />
+      {formStatus && <FormFact />}
       <main className="main">
         <Aside />
         <FactList />
@@ -74,12 +61,95 @@ function App() {
   );
 }
 
+function Header({ formStatus, setFormStatus }) {
+  return (
+    <header className="header">
+      <div className="logo">
+        <img
+          src="./logo.png"
+          height="68"
+          width="68"
+          alt="Today I Learned Logo"
+        />
+        <h1>Today I Learned</h1>
+      </div>
+
+      <button
+        className="btn btn-large btn-open"
+        id=""
+        onClick={() => setFormStatus((prev) => !prev)}
+      >
+        {formStatus ? "Close" : "Share a fact"}
+      </button>
+    </header>
+  );
+}
+
 function FormFact() {
-  return <form className="fact-form">Form Fact</form>;
+  const [shareFact, UpdateShareFact] = useState("");
+  const [source, UpdateSource] = useState("");
+  const [cat, catUpdate] = useState("");
+  function formSubmit(e) {
+    e.preventDefault();
+    console.log(shareFact, source, cat);
+    console.log(e);
+
+    //validation
+  }
+  return (
+    <form className="fact-form" onSubmit={formSubmit}>
+      <input
+        type="text"
+        placeholder="Share a fact with the world..."
+        maxLength={200}
+        value={shareFact}
+        onChange={(e) => UpdateShareFact(e.target.value)}
+      />
+      <span>{200 - shareFact.length}</span>
+      <input
+        type="text"
+        placeholder="Trustworthy source..."
+        value={source}
+        onChange={(e) => UpdateSource(e.target.value)}
+      />
+
+      <select value={cat} onChange={(e) => catUpdate(e.target.value)}>
+        <option value="">Choose category:</option>
+        {categories.map((cat) => (
+          <option key={cat.name} name={cat.name}>
+            {cat.name.toUpperCase()}
+          </option>
+        ))}
+      </select>
+      <button className="btn btn-large">Post</button>
+    </form>
+  );
 }
 
 function Aside() {
-  return <aside>Aside</aside>;
+  const [count, setCount] = useState(0);
+  return (
+    <aside>
+      <ul>
+        <li className="category">
+          <button className="btn btn-all-categories">All</button>
+        </li>
+
+        <li className="category">
+          <button
+            className="btn btn-all-categories"
+            onClick={() => setCount(count + 1)}
+          >
+            {count} - Increase count
+          </button>
+        </li>
+
+        {categories.map((cat) => (
+          <AsideCategories key={cat.name} cat={cat} />
+        ))}
+      </ul>
+    </aside>
+  );
 }
 
 function FactList() {
@@ -124,6 +194,19 @@ function Fact({ factObj }) {
         <button>🤯 {factObj.votesMindblowing}</button>
         <button>⛔️ {factObj.votesFalse}</button>
       </div>
+    </li>
+  );
+}
+
+function AsideCategories({ cat }) {
+  return (
+    <li className="category" key={cat.name}>
+      <button
+        className="btn btn-category"
+        style={{ backgroundColor: cat.color }}
+      >
+        {cat.name}
+      </button>
     </li>
   );
 }
