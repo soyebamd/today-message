@@ -1,5 +1,7 @@
 // hide the form .fact-form
 
+const APIDatabaseUrl = "https://ncwbioodaktvrvtdkgmp.supabase.co/rest/v1/";
+
 const factForm = document.querySelector(".fact-form");
 
 factForm.classList.add("hidden");
@@ -112,17 +114,17 @@ const factMessge = (year) =>
     ? currentYear - year
     : "System not supported this age ${age} year";
 
-console.log(factMessge(1947));
+//console.log(factMessge(1947));
 
 const myArray = [1, 2, 3, 4, 5, 6, 7];
 
 const addNewNum = [...myArray, 8, 9];
 
-console.log(addNewNum);
+//console.log(addNewNum);
 
 const [first, sec] = myArray;
 
-console.log(sec);
+//console.log(sec);
 
 // Object
 
@@ -139,7 +141,7 @@ const Book = {
 
 Book.title = "The Atomic Habits";
 
-console.log(Book.allInfo());
+//console.log(Book.allInfo());
 
 const categories = [
   { name: "technology", color: "#3b82f6" },
@@ -153,9 +155,9 @@ const categories = [
 ];
 
 // foreach loop
-console.log("categories: ");
+//console.log("categories: ");
 categories.forEach(function (cat) {
-  console.log(cat);
+  // console.log(cat);
 });
 
 //map
@@ -163,14 +165,14 @@ const testReturnwithMap = categories.map(function (wiw) {
   return wiw.name;
 });
 
-console.log("width no map", testReturnwithMap);
+//console.log("width no map", testReturnwithMap);
 
 //map
 const arrowtestReturnwithMap = categories.map((wiw) => {
   return { name: wiw.name, color: wiw.color };
 });
 
-console.log("width map", arrowtestReturnwithMap);
+//console.log("width map", arrowtestReturnwithMap);
 
 function age(age) {
   // return must in a function to work.
@@ -180,11 +182,11 @@ function age(age) {
     return "Minor";
   }
 }
-console.log(age(55));
+//console.log(age(55));
 
-console.log(btn);
+//console.log(btn);
 btn.title = "sdfsd";
-console.dir(btn);
+//console.dir(btn);
 
 // console.dir(document.querySelector("form"));
 
@@ -192,59 +194,105 @@ console.dir(btn);
 
 //add data from json file
 
-const initialFacts = [
-  {
-    id: 1,
-    text: "React is being developed by Meta (formerly facebook)",
-    source: "https://opensource.fb.com/",
-    category: "technology",
-    votesInteresting: 24,
-    votesMindblowing: 9,
-    votesFalse: 4,
-    createdIn: 2021,
-  },
-  {
-    id: 2,
-    text: "Millennial dads spend 3 times as much time with their kids than their fathers spent with them. In 1982, 43% of fathers had never changed a diaper. Today, that number is down to 3%",
-    source:
-      "https://www.mother.ly/parenting/millennial-dads-spend-more-time-with-their-kids",
-    category: "society",
-    votesInteresting: 11,
-    votesMindblowing: 2,
-    votesFalse: 0,
-    createdIn: 2019,
-  },
-  {
-    id: 3,
-    text: "Lisbon is the capital of Portugal",
-    source: "https://en.wikipedia.org/wiki/Lisbon",
-    category: "society",
-    votesInteresting: 8,
-    votesMindblowing: 3,
-    votesFalse: 1,
-    createdIn: 2015,
-  },
-];
+// const initialFacts = [
+//   {
+//     id: 1,
+//     text: "React is being developed by Meta (formerly facebook)",
+//     source: "https://opensource.fb.com/",
+//     category: "technology",
+//     votesInteresting: 24,
+//     votesMindblowing: 9,
+//     votesFalse: 4,
+//     createdIn: 2021,
+//   },
+//   {
+//     id: 2,
+//     text: "Millennial dads spend 3 times as much time with their kids than their fathers spent with them. In 1982, 43% of fathers had never changed a diaper. Today, that number is down to 3%",
+//     source:
+//       "https://www.mother.ly/parenting/millennial-dads-spend-more-time-with-their-kids",
+//     category: "society",
+//     votesInteresting: 11,
+//     votesMindblowing: 2,
+//     votesFalse: 0,
+//     createdIn: 2019,
+//   },
+//   {
+//     id: 3,
+//     text: "Lisbon is the capital of Portugal",
+//     source: "https://en.wikipedia.org/wiki/Lisbon",
+//     category: "society",
+//     votesInteresting: 8,
+//     votesMindblowing: 3,
+//     votesFalse: 1,
+//     createdIn: 2015,
+//   },
+// ];
 
-const factListContainer = document.querySelector(".facts-list");
+/*
+curl 'https://ncwbioodaktvrvtdkgmp.supabase.co/rest/v1/' \
+-H "apikey: SUPABASE_SERVICE_KEY" \
+-H "Authorization: Bearer SUPABASE_SERVICE_KEY"
 
-factListContainer.innerHTML = "";
+ Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jd2Jpb29kYWt0dnJ2dGRrZ21wIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjM3MzE5MiwiZXhwIjoyMTA3OTQ5MTkyfQ.Ovogi06AOCcCFRxzDZpuqXl422zYcp37yEzfckT_W4Q",
 
-console.log(categories.find((item) => item.name === "society").color);
+*/
 
-const contentHtml = initialFacts
-  .map((item) => {
-    const {
-      text,
-      source,
-      category,
-      votesInteresting,
-      votesMindblowing,
-      votesFalse,
-    } = item;
+// get data from api
+async function getData() {
+  try {
+    const data = await fetch(
+      "https://ncwbioodaktvrvtdkgmp.supabase.co/rest/v1/facts",
+      {
+        headers: {
+          apikey:
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jd2Jpb29kYWt0dnJ2dGRrZ21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNzMxOTIsImV4cCI6MjEwNzk0OTE5Mn0.U-DtGiJAA_K3S6m0EmRTOZ0Pz2IKWI-cYynrCSi67nc",
+        },
+      },
+    );
 
-    {
-      return `
+    if (!data.ok) {
+      throw new Error(`HTTP Error: ${data.status}`);
+    }
+
+    const response = await data.json();
+
+    return response;
+  } catch (err) {
+    console.error("Error displaying facts:", err);
+  }
+}
+
+// async function mm() {
+//   const ss = await getData();
+
+//   console.log(ss);
+// }
+printResult();
+async function printResult() {
+  const initialFacts = await getData();
+
+  console.log(initialFacts);
+
+  const factListContainer = document.querySelector(".facts-list");
+
+  factListContainer.innerHTML = "";
+
+  //console.log(categories.find((item) => item.name === "society").color);
+
+  const contentHtml = initialFacts
+    .map((item) => {
+      const {
+        text,
+        source,
+        category,
+        votesInteresting,
+        votesMindBlowing,
+        votesFalse,
+      } = item;
+
+      {
+        return `
 
   
   <li class="fact">
@@ -282,14 +330,15 @@ ${(() => {
 
               <div class="vote-buttons">
                 <button>👍 ${votesInteresting}</button>
-                <button>🤯 ${votesMindblowing}</button>
+                <button>🤯 ${votesMindBlowing}</button>
                 <button>⛔️ ${votesFalse}</button>
               </div>
             </li>
             
             `;
-    }
-  })
-  .join("");
+      }
+    })
+    .join("");
 
-factListContainer.insertAdjacentHTML("afterbegin", contentHtml);
+  factListContainer.insertAdjacentHTML("afterbegin", contentHtml);
+}
