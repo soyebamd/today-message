@@ -1,5 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./style.css";
+
+import validator from "validator";
+
+// supabase database connection - https://supabase.com/dashboard/project/ncwbioodaktvrvtdkgmp/integrations/data_api/docs
+//https://ncwbioodaktvrvtdkgmp.supabase.co/rest/v1/
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+const supabaseKey = process.env.REACT_APP_SUPABASE_KEY;
+
+// console.log(supabaseUrl);
+// console.log(supabaseKey ? "API key loaded" : "API key missing");
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const categories = [
   { name: "technology", color: "#3b82f6" },
@@ -12,50 +26,56 @@ const categories = [
   { name: "news", color: "#8b5cf6" },
 ];
 
-const initialFacts = [
-  {
-    id: 1,
-    text: "React is being developed by Meta (formerly facebook)",
-    source: "https://opensource.fb.com/",
-    category: "technology",
-    votesInteresting: 24,
-    votesMindblowing: 9,
-    votesFalse: 4,
-    createdIn: 2021,
-  },
-  {
-    id: 2,
-    text: "Millennial dads spend 3 times as much time with their kids than their fathers spent with them. In 1982, 43% of fathers had never changed a diaper. Today, that number is down to 3%",
-    source:
-      "https://www.mother.ly/parenting/millennial-dads-spend-more-time-with-their-kids",
-    category: "society",
-    votesInteresting: 11,
-    votesMindblowing: 2,
-    votesFalse: 0,
-    createdIn: 2019,
-  },
-  {
-    id: 3,
-    text: "Lisbon is the capital of Portugal",
-    source: "https://en.wikipedia.org/wiki/Lisbon",
-    category: "society",
-    votesInteresting: 8,
-    votesMindblowing: 3,
-    votesFalse: 1,
-    createdIn: 2015,
-  },
-];
-
 function App() {
   const [formStatus, setFormStatus] = useState(false);
+  const [fact, newFact] = useState([]);
+  const [filterCategory, setFilterCategory] = useState("all");
+
+  //add loading state
+
+  const [isLoading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function ddata() {
+      setLoading(true);
+
+      let query = supabase.from("facts").select("*");
+
+      if (filterCategory !== "all") {
+        query = query.eq("category", filterCategory);
+      }
+
+      let { data: fact, error } = await query.order("created_at", {
+        ascending: false,
+      }); // the latest post should be first
+
+      setLoading(false);
+
+      if (!error) newFact(fact);
+      else throw new Error("Error: ", error.message);
+
+      //  newFact(fact);
+    }
+
+    ddata();
+  }, [filterCategory]);
 
   return (
     <>
       <Header formStatus={formStatus} setFormStatus={setFormStatus} />
-      {formStatus && <FormFact />}
+      {formStatus && (
+        <FormFact addNewFact={newFact} resetForm={setFormStatus} />
+      )}
       <main className="main">
-        <Aside />
-        <FactList />
+        <Aside
+          setFilterCategory={setFilterCategory}
+          filterCategory={filterCategory}
+        />
+        {isLoading ? (
+          <Loading />
+        ) : (
+          <FactList FactListUpdated={fact} filterCategory={filterCategory} />
+        )}
       </main>
     </>
   );
@@ -85,16 +105,47 @@ function Header({ formStatus, setFormStatus }) {
   );
 }
 
-function FormFact() {
+function FormFact({ addNewFact, resetForm }) {
   const [shareFact, UpdateShareFact] = useState("");
   const [source, UpdateSource] = useState("");
   const [cat, catUpdate] = useState("");
   function formSubmit(e) {
     e.preventDefault();
     console.log(shareFact, source, cat);
-    console.log(e);
 
     //validation
+    if (
+      shareFact &&
+      validator.isURL(source) &&
+      cat &&
+      shareFact.length <= 200
+    ) {
+      console.log("Form sucess");
+
+      // adding a new fact
+
+      const newFact = {
+        id: Math.round(Math.random() * 10000),
+        text: shareFact,
+        source,
+        category: cat,
+        votesInteresting: 0,
+        votesMindblowing: 0,
+        votesFalse: 0,
+        createdIn: new Date().getUTCFullYear(),
+      };
+
+      addNewFact((item) => [...item, newFact]);
+
+      UpdateShareFact("");
+      UpdateSource("");
+      catUpdate("");
+      resetForm(false);
+
+      console.log(newFact);
+    } else {
+      console.log("please fill all data");
+    }
   }
   return (
     <form className="fact-form" onSubmit={formSubmit}>
@@ -126,40 +177,48 @@ function FormFact() {
   );
 }
 
-function Aside() {
-  const [count, setCount] = useState(0);
+function Aside({ setFilterCategory, filterCategory }) {
   return (
     <aside>
       <ul>
         <li className="category">
-          <button className="btn btn-all-categories">All</button>
-        </li>
-
-        <li className="category">
           <button
             className="btn btn-all-categories"
-            onClick={() => setCount(count + 1)}
+            onClick={() => setFilterCategory("all")}
           >
-            {count} - Increase count
+            All
           </button>
         </li>
 
         {categories.map((cat) => (
-          <AsideCategories key={cat.name} cat={cat} />
+          <AsideCategories
+            setFilterCategory={setFilterCategory}
+            filterCategory={filterCategory}
+            key={cat.name}
+            cat={cat}
+
+            // filterData={setFilterCategory(cat.name)}
+          />
         ))}
       </ul>
     </aside>
   );
 }
 
-function FactList() {
+function FactList({ FactListUpdated, filterCategory }) {
   return (
     <section>
       <ul className="facts-list">
-        {initialFacts.map((fact) => (
+        {FactListUpdated.map((fact) => (
           <Fact key={fact.id} factObj={fact} />
         ))}
       </ul>
+      <p>
+        There is {FactListUpdated.length}{" "}
+        {filterCategory && `in ${filterCategory} `}{" "}
+        {FactListUpdated.length > 1 ? "categories" : "category"} fact. Add your
+        own!{" "}
+      </p>
     </section>
   );
 }
@@ -198,17 +257,28 @@ function Fact({ factObj }) {
   );
 }
 
-function AsideCategories({ cat }) {
+function AsideCategories({ cat, filterCategory, setFilterCategory }) {
   return (
     <li className="category" key={cat.name}>
       <button
         className="btn btn-category"
-        style={{ backgroundColor: cat.color }}
+        style={{
+          backgroundColor: cat.color,
+
+          transform: filterCategory === cat.name && "scale(110%) rotate(-2deg)",
+        }}
+        onClick={() => {
+          setFilterCategory(cat.name);
+        }}
       >
         {cat.name}
       </button>
     </li>
   );
+}
+
+function Loading() {
+  return <h2>Loading...</h2>;
 }
 
 export default App;
