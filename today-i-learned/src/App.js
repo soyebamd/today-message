@@ -30,6 +30,7 @@ function App() {
   const [formStatus, setFormStatus] = useState(false);
   const [fact, newFact] = useState([]);
   const [filterCategory, setFilterCategory] = useState("all");
+  const [isuploading, setIsUploading] = useState(false);
 
   //add loading state
 
@@ -64,7 +65,12 @@ function App() {
     <>
       <Header formStatus={formStatus} setFormStatus={setFormStatus} />
       {formStatus && (
-        <FormFact addNewFact={newFact} resetForm={setFormStatus} />
+        <FormFact
+          addNewFact={newFact}
+          resetForm={setFormStatus}
+          setIsUploading={setIsUploading}
+          isuploading={isuploading}
+        />
       )}
       <main className="main">
         <Aside
@@ -105,15 +111,16 @@ function Header({ formStatus, setFormStatus }) {
   );
 }
 
-function FormFact({ addNewFact, resetForm }) {
+function FormFact({ addNewFact, resetForm, isuploading, setIsUploading }) {
   const [shareFact, UpdateShareFact] = useState("");
   const [source, UpdateSource] = useState("");
   const [cat, catUpdate] = useState("");
-  function formSubmit(e) {
+  async function formSubmit(e) {
     e.preventDefault();
     console.log(shareFact, source, cat);
 
     //validation
+    //  validator.isURL(source) &&
     if (
       shareFact &&
       validator.isURL(source) &&
@@ -125,24 +132,35 @@ function FormFact({ addNewFact, resetForm }) {
       // adding a new fact
 
       const newFact = {
-        id: Math.round(Math.random() * 10000),
         text: shareFact,
-        source,
-        category: cat,
-        votesInteresting: 0,
-        votesMindblowing: 0,
-        votesFalse: 0,
-        createdIn: new Date().getUTCFullYear(),
+        source: source,
+        category: cat.toLowerCase(),
       };
 
-      addNewFact((item) => [...item, newFact]);
+      setIsUploading(true);
+
+      const { data: NewFact, error } = await supabase
+        .from("facts")
+        .insert(newFact)
+        .select();
+
+      console.log(NewFact);
+
+      if (error) {
+        console.error("error to insert", error);
+      }
+
+      // const { error } = supabase.from("facts").insert(newFact).select;
+      // if (error) console.error(error);
+
+      addNewFact((item) => [newFact, ...item]);
+
+      setIsUploading(false);
 
       UpdateShareFact("");
       UpdateSource("");
       catUpdate("");
       resetForm(false);
-
-      console.log(newFact);
     } else {
       console.log("please fill all data");
     }
@@ -172,7 +190,9 @@ function FormFact({ addNewFact, resetForm }) {
           </option>
         ))}
       </select>
-      <button className="btn btn-large">Post</button>
+      <button className="btn btn-large" disabled={isuploading}>
+        Post
+      </button>
     </form>
   );
 }
@@ -242,7 +262,7 @@ function Fact({ factObj }) {
         className="tag"
         style={{
           backgroundColor: categories.find(
-            (cat) => cat.name === factObj.category,
+            (cat) => cat.name.toUpperCase() === factObj.category.toUpperCase(),
           )?.color,
         }}
       >
@@ -265,7 +285,9 @@ function AsideCategories({ cat, filterCategory, setFilterCategory }) {
         style={{
           backgroundColor: cat.color,
 
-          transform: filterCategory === cat.name && "scale(110%) rotate(-2deg)",
+          transform:
+            filterCategory.toLowerCase() === cat.name.toLowerCase() &&
+            "scale(110%) rotate(-2deg)",
         }}
         onClick={() => {
           setFilterCategory(cat.name);

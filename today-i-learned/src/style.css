@@ -152,7 +152,9 @@ ul {
   cursor: pointer;
   transition: 0.3s;
 }
-
+button.btn.btn-large[disabled] {
+  opacity: 0.2;
+}
 .btn:hover {
   transform: scale(110%) rotate(-2deg);
 }
