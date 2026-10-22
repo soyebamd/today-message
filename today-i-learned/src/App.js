@@ -3,9 +3,13 @@ import "./style.css";
 
 import validator from "validator";
 
+import { categories } from "./data/category-color.js";
+
 // supabase database connection - https://supabase.com/dashboard/project/ncwbioodaktvrvtdkgmp/integrations/data_api/docs
 //https://ncwbioodaktvrvtdkgmp.supabase.co/rest/v1/
 import { createClient } from "@supabase/supabase-js";
+
+import Header from "./components/Header.jsx";
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseKey = process.env.REACT_APP_SUPABASE_KEY;
@@ -14,17 +18,6 @@ const supabaseKey = process.env.REACT_APP_SUPABASE_KEY;
 // console.log(supabaseKey ? "API key loaded" : "API key missing");
 
 const supabase = createClient(supabaseUrl, supabaseKey);
-
-const categories = [
-  { name: "technology", color: "#3b82f6" },
-  { name: "science", color: "#16a34a" },
-  { name: "finance", color: "#ef4444" },
-  { name: "society", color: "#eab308" },
-  { name: "entertainment", color: "#db2777" },
-  { name: "health", color: "#14b8a6" },
-  { name: "history", color: "#f97316" },
-  { name: "news", color: "#8b5cf6" },
-];
 
 function App() {
   const [formStatus, setFormStatus] = useState(false);
@@ -64,6 +57,7 @@ function App() {
   return (
     <>
       <Header formStatus={formStatus} setFormStatus={setFormStatus} />
+
       {formStatus && (
         <FormFact
           addNewFact={newFact}
@@ -88,30 +82,6 @@ function App() {
         )}
       </main>
     </>
-  );
-}
-
-function Header({ formStatus, setFormStatus }) {
-  return (
-    <header className="header">
-      <div className="logo">
-        <img
-          src="./logo.png"
-          height="68"
-          width="68"
-          alt="Today I Learned Logo"
-        />
-        <h1>Today I Learned</h1>
-      </div>
-
-      <button
-        className="btn btn-large btn-open"
-        id=""
-        onClick={() => setFormStatus((prev) => !prev)}
-      >
-        {formStatus ? "Close" : "Share a fact"}
-      </button>
-    </header>
   );
 }
 
