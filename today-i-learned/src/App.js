@@ -80,7 +80,11 @@ function App() {
         {isLoading ? (
           <Loading />
         ) : (
-          <FactList FactListUpdated={fact} filterCategory={filterCategory} />
+          <FactList
+            FactListUpdated={fact}
+            filterCategory={filterCategory}
+            newFact={newFact}
+          />
         )}
       </main>
     </>
@@ -186,7 +190,7 @@ function FormFact({ addNewFact, resetForm, isuploading, setIsUploading }) {
         <option value="">Choose category:</option>
         {categories.map((cat) => (
           <option key={cat.name} name={cat.name}>
-            {cat.name.toUpperCase()}
+            {cat.name}
           </option>
         ))}
       </select>
@@ -225,12 +229,12 @@ function Aside({ setFilterCategory, filterCategory }) {
   );
 }
 
-function FactList({ FactListUpdated, filterCategory }) {
+function FactList({ FactListUpdated, filterCategory, newFact }) {
   return (
     <section>
       <ul className="facts-list">
-        {FactListUpdated.map((fact) => (
-          <Fact key={fact.id} factObj={fact} />
+        {FactListUpdated.map((fact, index) => (
+          <Fact key={index} factObj={fact} newFact={newFact} />
         ))}
       </ul>
       <p>
@@ -243,8 +247,25 @@ function FactList({ FactListUpdated, filterCategory }) {
   );
 }
 
-function Fact({ factObj }) {
+function Fact({ factObj, newFact }) {
   // console.log(factObj);
+  async function votesInterestingAdd(updateColumn) {
+    const { data: updatedFact, error } = await supabase
+      .from("facts")
+      .update({ [updateColumn]: factObj[updateColumn] + 1 })
+      .eq("id", factObj.id)
+      .select();
+
+    console.log(updatedFact);
+
+    // console.log(newFact(updatedFact));
+
+    if (!error)
+      newFact((item) =>
+        item.map((i) => (i.id === factObj.id ? updatedFact[0] : i)),
+      );
+  }
+
   return (
     <li className="fact">
       <p>
@@ -262,16 +283,22 @@ function Fact({ factObj }) {
         className="tag"
         style={{
           backgroundColor: categories.find(
-            (cat) => cat.name.toUpperCase() === factObj.category.toUpperCase(),
+            (cat) => cat.name === factObj.category,
           )?.color,
         }}
       >
         {factObj.category}
       </span>
       <div className="vote-buttons">
-        <button>👍 {factObj.votesInteresting}</button>
-        <button>🤯 {factObj.votesMindblowing}</button>
-        <button>⛔️ {factObj.votesFalse}</button>
+        <button onClick={() => votesInterestingAdd("votesInteresting")}>
+          👍 {factObj.votesInteresting}
+        </button>
+        <button onClick={() => votesInterestingAdd("votesMindBlowing")}>
+          🤯 {factObj.votesMindBlowing}
+        </button>
+        <button onClick={() => votesInterestingAdd("votesFalse")}>
+          ⛔️ {factObj.votesFalse}
+        </button>
       </div>
     </li>
   );
